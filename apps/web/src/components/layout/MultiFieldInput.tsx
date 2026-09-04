@@ -10,12 +10,17 @@ interface FieldDef {
 interface Props {
   fields?: FieldDef[];
   submitLabel?: string;
+  submitSize?: 'default' | 'sm' | 'lg' | 'icon';
   values?: Record<string, string>;
   inputs?: Record<string, string>;
-  onSubmit?: (payload: Record<string, string>) => void;
+  onSubmit?: (payload: Record<string, unknown>) => void;
+  emit?: unknown;
+  targetId?: string;
+  channelId?: string;
+  [key: string]: unknown;
 }
 
-export function MultiFieldInput({ fields = [], submitLabel = 'Submit', values = {}, inputs, onSubmit }: Props) {
+export function MultiFieldInput({ fields = [], submitLabel = 'Submit', submitSize, values = {}, inputs, onSubmit, emit, targetId, channelId, ...extra }: Props) {
   const [fieldValues, setFieldValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(fields.map((f) => [f.name, inputs?.[f.name] ?? values[f.name] ?? '']))
   );
@@ -28,7 +33,7 @@ export function MultiFieldInput({ fields = [], submitLabel = 'Submit', values = 
     const allFilled = fields.every((f) => fieldValues[f.name]?.trim());
     if (!allFilled) return;
     const text = fields.map((f) => `${f.label}: ${fieldValues[f.name]}`).join(', ');
-    onSubmit?.({ ...fieldValues, text });
+    onSubmit?.({ ...extra, ...fieldValues, text });
   }
 
   if (inputs) {
@@ -60,6 +65,7 @@ export function MultiFieldInput({ fields = [], submitLabel = 'Submit', values = 
       ))}
       <div className="multi-input-submit">
         <Button
+          size={submitSize}
           onClick={handleSubmit}
           disabled={!fields.every((f) => fieldValues[f.name]?.trim())}
         >
